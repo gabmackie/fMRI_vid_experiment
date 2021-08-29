@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-########################################################
-# I know using lots of lists is garbage, but it's easier to read like that
-# so that's why I'm doing it. I will make a neater version eventually
-########################################################
 import pandas as pd
 from random import shuffle, choice
 from psychopy import visual, core, gui, event
@@ -18,7 +14,6 @@ stimuli = 'Stimuli_List.xlsx'
 # Set escape key
 escape_key = 'escape'
 
-# 
 categories = ['Talking', 'Gaze', 'Expressions', 'Couple Talking', 'Head Turn']
 
 # Get information from the participant and set up our output file
@@ -65,14 +60,21 @@ df = pd.read_excel(stimuli)
 # Extract the number of rows, aka vidoes, in our sheet
 rows = df.shape[0]
 
-# Create a list for our stimuli, and lists for each category
-stimuli = []
+cats = []
 
-talk = []
-gaze = []
-expression = []
-couple = []
-head = []
+# Run through every row and add the category to a list
+for row in range(rows):
+    cats.append(df.loc[row, 'Category'])
+
+# Extract the unique category list
+categories = list(set(cats))
+
+# Create a dictionary for our stimuli
+stimuli = {}
+
+# Add each category to the dict, with a list as the value
+for category in categories:
+    stimuli[category] = []
 
 # Run through every row and sort the video
 for row in range(rows):
@@ -87,37 +89,21 @@ for row in range(rows):
     
     # Create a movie stimulus
     # Can add more features here if needed
-    stim = visual.MovieStim3(win, filename=vid_path, volume = 0, name = vid)
+    stim = visual.MovieStim3(win, filename=vid_path, volume = 0.0, name = vid)
     
-    # Put it into the relevant category
-    if cat == 'Talking':
-        talk.append(stim)
-    elif cat == 'Gaze':
-        gaze.append(stim)
-    elif cat == 'Expressions':
-        expression.append(stim)
-    elif cat == 'Couple Talking':
-        couple.append(stim)
-    elif cat == 'Head Turn':
-        head.append(stim)
-    else:
-        print("There is a stimulus that doesn't match a known category")
+    for stim_type in stimuli:
+        if stim_type == cat:
+            stimuli[stim_type].append(stim)
 
-# Shuffle the videos within a category, and add them to our stimuli list
-shuffle(talk)
-shuffle(gaze)
-shuffle(expression)
-shuffle(couple)
-shuffle(head)
+# Shuffle the stimuli within each block
+for group in stimuli:
+    shuffle(stimuli[group])
+    
+# Take the category names so we can call each one
+keys = list(stimuli.keys())
 
-stimuli.append(gaze)
-stimuli.append(talk)
-stimuli.append(expression)
-stimuli.append(couple)
-stimuli.append(head)
-
-# Shuffle the blocks
-shuffle(stimuli)
+# Shuffle the order of the blocks
+shuffle(keys)
 
 
 # EXPERIMENT STARTS HERE
@@ -132,7 +118,7 @@ f.flush()
 core.wait(4)
 
 # Run each cateogry of stimulus at a time
-for block in stimuli:
+for cat, block in stimuli.items():
     # Calculate the number of trials in a block
     length = len(block)
     # Pick a random trial to play the red dot
@@ -178,7 +164,7 @@ for block in stimuli:
         if key_presses > 0:
             # If the key pressed was the escape key, print that to the output and quit the experiment
             if keys[0] == escape_key:
-                response = "User requested to quit: ending experiment"
+                f.write('User requested to quit: ending experiment')
                 f.close()
                 win.close()
                 core.quit()
@@ -195,7 +181,7 @@ for block in stimuli:
         # Extract the name out of the mov stimulus
         name = stim.name
         # Write this trial's information to the output file
-        f.write(f'block,{name},{timing},{response}\n')
+        f.write(f'{cat},{name},{timing},{response}\n')
         f.flush()
         
         # increase the trial num by one
