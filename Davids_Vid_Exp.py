@@ -132,9 +132,7 @@ for rep in range(reps):
         
         # Now play each video within that block
         # You need to be careful how much you put in here, because it can slow the code down
-        for stim in block:
-            # Assign the stimuli to our mov object
-            mov = stim
+        for mov in block:
             
             # Set the trial to be a red-dot or normal trial
             # This is seperate from the while loop in case we want a user response to 
@@ -147,6 +145,10 @@ for rep in range(reps):
             # Clear the events so any keys pressed previously won't count
             event.clearEvents()
             
+            # Go to the beginning of the mov stimulus and get it ready to be played
+            mov.seek(0)
+            mov.status = visual.NOT_STARTED
+            
             # Extract the time that the video starts
             timing = core.getTime()
             # This runs the actual video
@@ -156,9 +158,6 @@ for rep in range(reps):
                 if circ:
                     circle.draw()
                 win.flip()
-                
-            mov.seek(0)
-            mov.status = visual.NOT_STARTED
             
             # Get the keys that the participant has pressed
             keys = event.getKeys()
