@@ -11,9 +11,6 @@ stimuli = 'Stimuli_List.xlsx'
 # Set escape key
 escape_key = 'escape'
 
-# Set the number of times the whole 5 blocks should repeat, with a rest block between each set
-reps = 2
-
 
 # Get the working directory, where our file is
 cwd = os.getcwd()
@@ -91,7 +88,7 @@ for row in range(rows):
     
     # Create a movie stimulus
     # Can add more features here if needed
-    stim = visual.MovieStim3(win, filename=vid_path, volume = 0.0, name = vid)
+    stim = visual.MovieStim3(win, filename=vid_path, noAudio = True, name = vid)
     
     for stim_type in stimuli:
         if stim_type == cat:
@@ -101,98 +98,93 @@ for row in range(rows):
 # Set the clock (Not sure what it does, don't delete)
 globalClock = core.Clock()
 
-for rep in range(reps):
-    # Shuffle the stimuli within each block
-    for group in stimuli:
-        shuffle(stimuli[group])
-        
-    # Take the category names so we can call each one
-    keys = list(stimuli.keys())
+# Shuffle the stimuli within each block
+for group in stimuli:
+    shuffle(stimuli[group])
     
-    # Shuffle the order of the blocks
-    shuffle(keys)
+# Take the category names so we can call each one
+keys = list(stimuli.keys())
+
+# Shuffle the order of the blocks
+shuffle(keys)
+
+# Have an introductory rest block
+timing = win.flip()
+# Write out the block information
+f.write(f'rest,NA,{timing},NA\n')
+f.flush()
+core.wait(4)
+
+# Run each cateogry of stimulus at a time
+for key in keys:
+    # Extract the block from our dictionary
+    block = stimuli[key]
     
-    # Have an introductory rest block
-    timing = win.flip()
-    # Write out the block information
-    f.write(f'rest,NA,{timing},NA\n')
-    f.flush()
-    core.wait(4)
+    # Calculate the number of trials in a block
+    length = len(block)
+    # Pick a random trial to play the red dot
+    red_trial = choice(range(length)) + 1
+    trial = 1
     
-    # Run each cateogry of stimulus at a time
-    for key in keys:
-        # Extract the block from our dictionary
-        block = stimuli[key]
+    # Now play each video within that block
+    # You need to be careful how much you put in here, because it can slow the code down
+    for mov in block:
         
-        # Calculate the number of trials in a block
-        length = len(block)
-        # Pick a random trial to play the red dot
-        red_trial = choice(range(length)) + 1
-        trial = 1
+        # Set the trial to be a red-dot or normal trial
+        # This is seperate from the while loop in case we want a user response to 
+        # end the dot. We'd do that by setting it to false
+        if trial == red_trial:
+            circ = True
+        else:
+            circ = False
         
-        # Now play each video within that block
-        # You need to be careful how much you put in here, because it can slow the code down
-        for mov in block:
+        # Clear the events so any keys pressed previously won't count
+        event.clearEvents()
+        
+        # Extract the time that the video starts
+        timing = core.getTime()
+        # This runs the actual video
+        while mov.status != visual.FINISHED:
+            mov.draw()
+            # Drawing a circle if needed
+            if circ:
+                circle.draw()
+            win.flip()
+        
+        # Get the keys that the participant has pressed
+        keys = event.getKeys()
+        
+        # The length of the keys is the number of keys pressed
+        key_presses = len(keys)
+        
+        # Set the response to the default of NA
+        response = 'NA'
+        
+        if key_presses > 0:
+            # If the key pressed was the escape key, print that to the output and quit the experiment
+            if keys[0] == escape_key:
+                f.write('User requested to quit: ending experiment')
+                f.close()
+                win.close()
+                core.quit()
             
-            # Set the trial to be a red-dot or normal trial
-            # This is seperate from the while loop in case we want a user response to 
-            # end the dot. We'd do that by setting it to false
-            if trial == red_trial:
-                circ = True
-            else:
-                circ = False
-            
-            # Clear the events so any keys pressed previously won't count
-            event.clearEvents()
-            
-            # Go to the beginning of the mov stimulus and get it ready to be played
-            mov.seek(0)
-            mov.status = visual.NOT_STARTED
-            
-            # Extract the time that the video starts
-            timing = core.getTime()
-            # This runs the actual video
-            while mov.status != visual.FINISHED:
-                mov.draw()
-                # Drawing a circle if needed
-                if circ:
-                    circle.draw()
-                win.flip()
-            
-            # Get the keys that the participant has pressed
-            keys = event.getKeys()
-            
-            # The length of the keys is the number of keys pressed
-            key_presses = len(keys)
-            
-            # Set the response to the default of NA
-            response = 'NA'
-            
-            if key_presses > 0:
-                # If the key pressed was the escape key, print that to the output and quit the experiment
-                if keys[0] == escape_key:
-                    f.write('User requested to quit: ending experiment')
-                    f.close()
-                    win.close()
-                    core.quit()
-                
-                # If it wasn't the esc key, and the red dot trial happened, it means they responded
-                elif circ:
-                    response = True
-            
-            # If no keys were pressed and it was the red dot trial, then they failed to respond
-            else:
-                if circ:
-                    response = False
-            
-            # Extract the name out of the mov stimulus
-            name = stim.name
-            # Write this trial's information to the output file
-            f.write(f'{key},{name},{timing},{response}\n')
-            f.flush()
-            
-            # increase the trial num by one
-            trial += 1
+            # If it wasn't the esc key, and the red dot trial happened, it means they responded
+            elif circ:
+                response = True
+        
+        # If no keys were pressed and it was the red dot trial, then they failed to respond
+        else:
+            if circ:
+                response = False
+        
+        # Extract the name out of the mov stimulus
+        name = stim.name
+        # Write this trial's information to the output file
+        f.write(f'{key},{name},{timing},{response}\n')
+        f.flush()
+        
+        # increase the trial num by one
+        trial += 1
 
 # Have an final rest block
 timing = win.flip()
