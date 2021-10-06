@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-from random import shuffle, choice, sample
+from random import shuffle, sample
 from psychopy import visual, core, gui, event
 import os
 from datetime import datetime

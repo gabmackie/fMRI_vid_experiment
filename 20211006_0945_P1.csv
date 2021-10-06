@@ -1,0 +1,12 @@
+block,video,timing,response
+rest,NA,24.304997299999968,NA
+Gaze,Couple1_Talking4,28.305037399999947,NA
+Gaze,Couple1_Talking4,31.358742300000017,False
+Gaze,Couple1_Talking4,34.408157500000016,NA
+Expressions,Couple1_Talking4,37.52464650000002,True
+Couple Talking,Couple1_Talking4,41.14116369999999,True
+Talking,Couple1_Talking4,44.19149909999999,NA
+Talking,Couple1_Talking4,47.23995679999996,NA
+Talking,Couple1_Talking4,50.28917190000004,True
+Head Turn,Couple1_Talking4,53.338823700000034,True
+rest,NA,56.570065399999976,NA
