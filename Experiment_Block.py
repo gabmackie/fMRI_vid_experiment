@@ -51,6 +51,9 @@ win = visual.Window([1024, 768], units="pix",
 # Create a circle stimulus
 circle = visual.Circle(win, radius=5, edges=32, lineColor='red', fillColor='red')
 
+# Create a cross stimulus
+fix = visual.TextStim(win, text='+')
+
 
 # Load our stimuli list using pandas
 # Add "sheet_name = 2" for if it's working from the second sheet
@@ -108,6 +111,11 @@ keys = list(stimuli.keys())
 # Shuffle the order of the blocks
 shuffle(keys)
 
+# Show a fixation cross until the key 5 is pressed
+fix.draw()
+win.flip()
+event.waitKeys(keyList=['5'])
+
 # Have an introductory rest block
 timing = win.flip()
 # Write out the block information
@@ -152,7 +160,8 @@ for key in keys:
             win.flip()
         
         # Get the keys that the participant has pressed
-        keys = event.getKeys()
+        # TODO: Check that the key list works
+        keys = event.getKeys(keyList=['1', '2', '3', '4', escape_key])
         
         # The length of the keys is the number of keys pressed
         key_presses = len(keys)
@@ -178,7 +187,7 @@ for key in keys:
                 response = False
         
         # Extract the name out of the mov stimulus
-        name = stim.name
+        name = mov.name
         # Write this trial's information to the output file
         f.write(f'{key},{name},{timing},{response}\n')
         f.flush()
@@ -192,7 +201,6 @@ timing = win.flip()
 f.write(f'rest,NA,{timing},NA\n')
 f.flush()
 core.wait(4)
-# TODO Does he want a final time file here?
 
 # Close the experiment
 f.close()
