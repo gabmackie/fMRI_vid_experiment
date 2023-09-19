@@ -9,7 +9,7 @@ from datetime import datetime
 stimuli = 'Stimuli_List.xlsx'
 
 # Set escape key
-escape_key = 'escape'
+escape_key = 'space'
 
 
 # Get the working directory, where our file is
